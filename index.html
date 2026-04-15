@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="No Excuses"/>
+  <title>Anti-Laziness Command Center</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{min-height:100vh;background:#0f0f1a;color:#fff;font-family:-apple-system,'Segoe UI',sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+    .header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:52px 20px 0;border-bottom:1px solid #ffffff15}
+    .header h1{font-size:20px;font-weight:800;letter-spacing:-0.5px}
+    .header p{font-size:11px;color:#ffffff60;margin-top:2px;margin-bottom:14px}
+    .tabs{display:flex;gap:4px}
+    .tab{flex:1;padding:10px 4px;border:none;border-radius:8px 8px 0 0;background:transparent;color:#ffffff60;font-weight:400;font-size:11px;cursor:pointer;transition:all 0.2s}
+    .tab.active{background:#6c63ff;color:#fff;font-weight:700}
+    .content{padding:20px 16px;max-width:500px;margin:0 auto}
+    .nudge-banner{background:linear-gradient(90deg,#ff4757,#ff6b81);padding:12px 20px;font-size:13px;font-weight:600;display:none}
+    .nudge-banner.show{display:block}
+    .card{background:#1a1a2e;border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid #ffffff10}
+    .card-label{font-size:11px;font-weight:700;letter-spacing:1px;margin-bottom:10px}
+    .score-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+    .score-num{font-size:52px;font-weight:900;line-height:1}
+    .score-msg{font-size:12px;color:#ffffff80;margin-top:4px}
+    svg.ring{transform:rotate(-90deg)}
+    .hype-card{background:linear-gradient(135deg,#6c63ff20,#6c63ff05);border:1px solid #6c63ff40;border-radius:16px;padding:18px;margin-bottom:14px}
+    .hype-text{font-size:14px;font-weight:600;line-height:1.5;margin-bottom:12px}
+    .btn-hype{background:#6c63ff;border:none;border-radius:8px;padding:8px 16px;color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+    .focus-card{background:#ff475715;border:1px solid #ff475740;border-radius:16px;padding:18px;margin-bottom:14px}
+    .focus-title{font-size:17px;font-weight:800;margin-top:4px}
+    .focus-sub{font-size:11px;color:#ffffff60;margin-top:4px}
+    .btn-kick{width:100%;padding:16px;background:linear-gradient(135deg,#ff4757,#c44569);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px #ff475740;margin-bottom:14px}
+    .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .stat-card{background:#1a1a2e;border-radius:12px;padding:16px;text-align:center}
+    .stat-num{font-size:28px;font-weight:900}
+    .stat-label{font-size:11px;color:#ffffff60;margin-top:2px}
+    .add-task-card{background:#1a1a2e;border-radius:16px;padding:18px;margin-bottom:14px}
+    .add-label{font-size:12px;font-weight:700;color:#6c63ff;margin-bottom:10px}
+    input[type="text"]{width:100%;padding:12px 14px;background:#0f0f1a;border:1px solid #ffffff20;border-radius:10px;color:#fff;font-size:14px;margin-bottom:10px;outline:none}
+    .priority-row{display:flex;gap:8px}
+    .btn-priority{flex:1;padding:8px 4px;border-radius:8px;background:transparent;font-weight:700;font-size:12px;cursor:pointer}
+    .btn-add{flex:1;padding:8px;background:#6c63ff;border:none;border-radius:8px;color:#fff;font-weight:700;font-size:12px;cursor:pointer}
+    .priority-section-label{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px;margin-top:4px}
+    .task-item{background:#1a1a2e;border-radius:12px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1px solid #ffffff10;transition:opacity 0.3s}
+    .task-item.done{opacity:.45}
+    .task-check{width:28px;height:28px;border-radius:7px;background:transparent;border:2px solid #ffffff40;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;transition:all 0.2s}
+    .task-check.checked{background:#2ed573;border-color:#2ed573}
+    .task-text{flex:1;font-size:14px}
+    .task-text.done{text-decoration:line-through}
+    .task-del{background:none;border:none;color:#ffffff30;cursor:pointer;font-size:18px;padding:4px}
+    .habit-item{border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;border:1px solid #ffffff10;transition:all 0.3s;background:#1a1a2e}
+    .habit-item.done{background:#2ed57315;border-color:#2ed57340}
+    .habit-check{width:32px;height:32px;border-radius:8px;background:transparent;border:2px solid #ffffff30;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.2s}
+    .habit-check.checked{background:#2ed573;border-color:#2ed573}
+    .habit-name{font-size:14px;font-weight:600}
+    .habit-streak{font-size:11px;color:#ffa502;margin-top:2px}
+    .streak-ring{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+    .streak-inner{width:32px;height:32px;border-radius:50%;background:#0f0f1a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#ffa502;z-index:1}
+    .section{display:none}
+    .section.active{display:block}
+
+    /* Weekly Dashboard */
+    .week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .week-grade{font-size:48px;font-weight:900;text-align:center;line-height:1}
+    .week-label{font-size:11px;color:#ffffff60;text-align:center;margin-top:2px}
+    .week-bar-row{margin-bottom:10px}
+    .week-bar-label{display:flex;justify-content:space-between;font-size:11px;color:#ffffff80;margin-bottom:4px}
+    .week-bar-bg{background:#ffffff10;border-radius:99px;height:10px;overflow:hidden}
+    .week-bar-fill{height:10px;border-radius:99px;transition:width 0.5s}
+    .day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+    .day-cell{background:#1a1a2e;border-radius:10px;padding:8px 4px;text-align:center}
+    .day-name{font-size:9px;color:#ffffff60;margin-bottom:4px}
+    .day-score{font-size:13px;font-weight:800}
+    .week-reset-note{font-size:11px;color:#ffffff40;text-align:center;margin-top:8px}
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>⚡ Anti-Laziness Command Center</h1>
+  <p>No excuses. Only execution.</p>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard',this)">🏠 Today</button>
+    <button class="tab" onclick="switchTab('weekly',this)">📊 Week</button>
+    <button class="tab" onclick="switchTab('tasks',this)">✅ Tasks</button>
+    <button class="tab" onclick="switchTab('habits',this)">🔥 Habits</button>
+  </div>
+</div>
+
+<div id="nudge-banner" class="nudge-banner">🚨 <span id="nudge-text"></span></div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div id="section-dashboard" class="section active">
+    <div class="score-card" id="score-card">
+      <div>
+        <div style="font-size:11px;color:#ffffff60;margin-bottom:4px">TODAY'S SCORE</div>
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-msg" id="score-msg"></div>
+      </div>
+      <svg width="90" height="90" viewBox="0 0 100 100" class="ring">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#ffffff15" stroke-width="10"/>
+        <circle id="score-ring" cx="50" cy="50" r="40" fill="none" stroke="#2ed573"
+          stroke-width="10" stroke-linecap="round" stroke-dasharray="0 251" style="transition:stroke-dasharray 0.5s"/>
+      </svg>
+    </div>
+    <div class="hype-card">
+      <div class="card-label" style="color:#6c63ff">💬 DAILY HYPE</div>
+      <div class="hype-text" id="hype-text"></div>
+      <button class="btn-hype" onclick="newHype()">New Hype 🔁</button>
+    </div>
+    <div class="focus-card" id="focus-card" style="display:none">
+      <div class="card-label" style="color:#ff4757">🎯 DO THIS NEXT</div>
+      <div class="focus-title" id="focus-task-text"></div>
+      <div class="focus-sub" id="focus-task-priority"></div>
+    </div>
+    <button class="btn-kick" onclick="fireNudge()">🚨 KICK ME INTO ACTION</button>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" style="color:#2ed573" id="stat-tasks">0/0</div>
+        <div class="stat-label">Tasks Done</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#ffa502" id="stat-habits">0/0</div>
+        <div class="stat-label">Habits Done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY -->
+  <div id="section-weekly" class="section">
+    <div class="card">
+      <div class="week-header">
+        <div>
+          <div style="font-size:12px;color:#ffffff60">THIS WEEK</div>
+          <div style="font-size:15px;font-weight:700" id="week-range"></div>
+        </div>
+        <div>
+          <div class="week-grade" id="week-grade">—</div>
+          <div class="week-label">Weekly Grade</div>
+        </div>
+      </div>
+      <div class="day-grid" id="day-grid"></div>
+      <div style="font-size:12px;color:#ffffff60;margin-bottom:12px">Habit completion by day</div>
+      <div id="habit-bars"></div>
+      <div class="week-reset-note">🔄 Habits reset every Sunday</div>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div id="section-tasks" class="section">
+    <div class="add-task-card">
+      <div class="add-label">+ ADD TASK</div>
+      <input type="text" id="task-input" placeholder="What needs to get done?" onkeydown="if(event.key==='Enter')addTask()"/>
+      <div class="priority-row">
+        <button class="btn-priority" id="p-High" onclick="setPriority('High')" style="border:2px solid #ff4757;color:#ff4757;background:#ff475720">High</button>
+        <button class="btn-priority" id="p-Medium" onclick="setPriority('Medium')" style="border:2px solid #ffffff20;color:#ffffff60">Medium</button>
+        <button class="btn-priority" id="p-Low" onclick="setPriority('Low')" style="border:2px solid #ffffff20;color:#ffffff60">Low</button>
+        <button class="btn-add" onclick="addTask()">Add ✓</button>
+      </div>
+    </div>
+    <div id="task-list"></div>
+  </div>
+
+  <!-- HABITS -->
+  <div id="section-habits" class="section">
+    <p style="font-size:12px;color:#ffffff60;margin-bottom:14px">Check off each habit you've completed today.</p>
+    <div id="habit-list"></div>
+  </div>
+
+</div>
+
+<script>
+const HYPE=["You didn't come this far to only come this far. 🔥","Lazy is a choice. So is greatness. Pick one. 💪","The version of you from 5 years ago is watching. Don't embarrass him.","Every second you delay, someone else is putting in the work.","Pain is temporary. Regret is forever. GET UP. 🚀","Your goals don't care about your mood. Neither do I.","Champions don't wait for motivation. They build it. NOW."];
+const NUDGES=["Still sitting there? Pick ONE task and start. You have 10 seconds.","What's the smallest possible first step? Do THAT. Right now.","You've been 'thinking about it' long enough. Start. Then think.","Open the file. Send the message. Make the call. GO.","Lazy brain is lying to you. It will feel better once you START."];
+const HABIT_NAMES=["Exercise","Read","No social media before 10am","Drink 2L water","Sleep by 11pm"];
+const DAY_NAMES=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const PC={High:"#ff4757",Medium:"#ffa502",Low:"#2ed573"};
+const PB={High:"#ff475720",Medium:"#ffa50220",Low:"#2ed57320"};
+
+function load(k,fb){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fb;}catch{return fb;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function rand(a){return a[Math.floor(Math.random()*a.length)];}
+
+// Get Monday of current week (week starts Sunday, reset Sunday)
+function getWeekStart(){
+  const d=new Date();
+  const day=d.getDay(); // 0=Sun
+  const diff=d.getDate()-day; // back to Sunday
+  const sun=new Date(d);
+  sun.setDate(diff);
+  sun.setHours(0,0,0,0);
+  return sun.toISOString().split('T')[0];
+}
+
+const todayKey=new Date().toISOString().split('T')[0];
+const weekStartKey=getWeekStart();
+
+// Check if we need to reset habits (new week)
+let savedWeekStart=load('alc_week_start','');
+if(savedWeekStart!==weekStartKey){
+  // New week — reset habits but keep streaks
+  save('alc_week_start',weekStartKey);
+  save('alc_habits',{});
+  save('alc_week_history', load('alc_week_history',{})); // preserve history
+}
+
+let tasks=load('alc_tasks',[
+  {id:1,text:"Finish weekly report",priority:"High",done:false},
+  {id:2,text:"Reply to pending emails",priority:"Medium",done:false},
+  {id:3,text:"Plan tomorrow",priority:"Low",done:false}
+]);
+let habits=load('alc_habits',{});
+let streaks=load('alc_streaks',{});
+let weekHistory=load('alc_week_history',{}); // {dateKey: {habitName: bool}}
+
+HABIT_NAMES.forEach(h=>{
+  if(!(h in habits))habits[h]=false;
+  if(!(h in streaks))streaks[h]=0;
+});
+
+let selPriority="High";
+
+// Save today's habit snapshot to history
+function saveTodayHistory(){
+  weekHistory[todayKey]={...habits};
+  save('alc_week_history',weekHistory);
+}
+
+function switchTab(id,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='dashboard')updateDashboard();
+  if(id==='weekly')renderWeekly();
+  if(id==='tasks')renderTasks();
+  if(id==='habits')renderHabits();
+}
+
+function updateDashboard(){
+  const done=tasks.filter(t=>t.done).length;
+  const habDone=Object.values(habits).filter(Boolean).length;
+  const score=Math.round((done/Math.max(tasks.length,1))*50+(habDone/HABIT_NAMES.length)*50);
+  const color=score>=75?"#2ed573":score>=40?"#ffa502":"#ff4757";
+  document.getElementById('score-num').textContent=score;
+  document.getElementById('score-num').style.color=color;
+  document.getElementById('score-card').style.borderColor=color+'40';
+  document.getElementById('score-msg').textContent=score>=75?"🔥 You're on fire! Keep pushing!":score>=40?"💪 Not bad. You can do better.":"😤 Unacceptable. Time to grind.";
+  const ring=document.getElementById('score-ring');
+  ring.style.stroke=color;
+  ring.setAttribute('stroke-dasharray',(2.51*score)+' '+(251-2.51*score));
+  document.getElementById('stat-tasks').textContent=done+'/'+tasks.length;
+  document.getElementById('stat-habits').textContent=habDone+'/'+HABIT_NAMES.length;
+  const next=tasks.find(t=>!t.done&&t.priority==='High')||tasks.find(t=>!t.done&&t.priority==='Medium')||tasks.find(t=>!t.done);
+  const fc=document.getElementById('focus-card');
+  if(next){fc.style.display='block';document.getElementById('focus-task-text').textContent=next.text;document.getElementById('focus-task-priority').textContent='Priority: '+next.priority;}
+  else fc.style.display='none';
+}
+
+function renderWeekly(){
+  // Build 7 days of this week starting Sunday
+  const weekStart=new Date(weekStartKey);
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart);
+    d.setDate(weekStart.getDate()+i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+
+  // Day grid
+  const today=todayKey;
+  let dayHtml='';
+  let totalScore=0; let scoredDays=0;
+  days.forEach((dk,i)=>{
+    const isToday=dk===today;
+    const isFuture=dk>today;
+    let pct=0;
+    if(isToday){
+      pct=Math.round((Object.values(habits).filter(Boolean).length/HABIT_NAMES.length)*100);
+    } else if(!isFuture && weekHistory[dk]){
+      const h=weekHistory[dk];
+      pct=Math.round((Object.values(h).filter(Boolean).length/HABIT_NAMES.length)*100);
+    }
+    if(!isFuture){totalScore+=pct;scoredDays++;}
+    const col=pct>=80?"#2ed573":pct>=50?"#ffa502":pct>0?"#ff4757":"#ffffff20";
+    dayHtml+=`<div class="day-cell" style="border:1px solid ${isToday?'#6c63ff':'#ffffff10'}">
+      <div class="day-name">${DAY_NAMES[i]}</div>
+      <div class="day-score" style="color:${isFuture?'#ffffff20':col}">${isFuture?'—':pct+'%'}</div>
+    </div>`;
+  });
+  document.getElementById('day-grid').innerHTML=dayHtml;
+
+  // Week range label
+  const endDay=new Date(weekStart);endDay.setDate(weekStart.getDate()+6);
+  document.getElementById('week-range').textContent=
+    weekStart.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' – '+
+    endDay.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+
+  // Grade
+  const avg=scoredDays?Math.round(totalScore/scoredDays):0;
+  const grade=avg>=90?'S':avg>=75?'A':avg>=55?'B':avg>=35?'C':'F';
+  const gradeColor=avg>=90?"#6c63ff":avg>=75?"#2ed573":avg>=55?"#ffa502":avg>=35?"#ff4757":"#ff4757";
+  document.getElementById('week-grade').textContent=grade;
+  document.getElementById('week-grade').style.color=gradeColor;
+
+  // Habit bars
+  let barHtml='';
+  HABIT_NAMES.forEach(h=>{
+    let completedDays=0;
+    days.forEach((dk,i)=>{
+      if(dk>today)return;
+      const src=dk===today?habits:weekHistory[dk]||{};
+      if(src[h])completedDays++;
+    });
+    const pct=Math.round((completedDays/7)*100);
+    const col=pct>=80?"#2ed573":pct>=50?"#ffa502":"#ff4757";
+    barHtml+=`<div class="week-bar-row">
+      <div class="week-bar-label"><span>${h}</span><span style="color:${col}">${completedDays}/7 days</span></div>
+      <div class="week-bar-bg"><div class="week-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  });
+  document.getElementById('habit-bars').innerHTML=barHtml;
+}
+
+function newHype(){document.getElementById('hype-text').textContent=rand(HYPE);}
+function fireNudge(){
+  document.getElementById('nudge-text').textContent=rand(NUDGES);
+  const b=document.getElementById('nudge-banner');
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),5000);
+}
+
+function setPriority(p){
+  selPriority=p;
+  ['High','Medium','Low'].forEach(x=>{
+    const btn=document.getElementById('p-'+x);
+    if(x===p){btn.style.border='2px solid '+PC[x];btn.style.color=PC[x];btn.style.background=PB[x];}
+    else{btn.style.border='2px solid #ffffff20';btn.style.color='#ffffff60';btn.style.background='transparent';}
+  });
+}
+
+function addTask(){
+  const inp=document.getElementById('task-input');
+  const text=inp.value.trim();
+  if(!text)return;
+  tasks.push({id:Date.now(),text,priority:selPriority,done:false});
+  inp.value='';
+  save('alc_tasks',tasks);renderTasks();
+}
+function toggleTask(id){
+  tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t);
+  save('alc_tasks',tasks);renderTasks();
+}
+function deleteTask(id){
+  tasks=tasks.filter(t=>t.id!==id);
+  save('alc_tasks',tasks);renderTasks();
+}
+function renderTasks(){
+  const list=document.getElementById('task-list');
+  let html='';
+  ['High','Medium','Low'].forEach(p=>{
+    const group=tasks.filter(t=>t.priority===p);
+    if(!group.length)return;
+    html+=`<div class="priority-section-label" style="color:${PC[p]}">${p.toUpperCase()} PRIORITY</div>`;
+    group.forEach(t=>{
+      html+=`<div class="task-item${t.done?' done':''}" style="border-color:${t.done?'#ffffff10':PC[t.priority]+'30'}">
+        <button class="task-check${t.done?' checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</button>
+        <span class="task-text${t.done?' done':''}">${t.text}</span>
+        <button class="task-del" onclick="deleteTask(${t.id})">✕</button>
+      </div>`;
+    });
+  });
+  list.innerHTML=html;
+}
+
+function toggleHabit(h){
+  habits[h]=!habits[h];
+  if(habits[h])streaks[h]++;
+  else if(streaks[h]>0)streaks[h]--;
+  save('alc_habits',habits);
+  save('alc_streaks',streaks);
+  saveTodayHistory();
+  renderHabits();
+}
+function renderHabits(){
+  const list=document.getElementById('habit-list');
+  let html='';
+  HABIT_NAMES.forEach(h=>{
+    const pct=(streaks[h]%30)/30;
+    const deg=Math.round(pct*360);
+    html+=`<div class="habit-item${habits[h]?' done':''}">
+      <button class="habit-check${habits[h]?' checked':''}" onclick="toggleHabit('${h}')">${habits[h]?'✓':''}</button>
+      <div style="flex:1">
+        <div class="habit-name">${h}</div>
+        <div class="habit-streak">🔥 ${streaks[h]} day streak</div>
+      </div>
+      <div class="streak-ring" style="background:conic-gradient(#ffa502 ${deg}deg,#ffffff10 0deg)">
+        <div class="streak-inner">${streaks[h]}</div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML=html;
+}
+
+// Init
+newHype();
+updateDashboard();
+renderTasks();
+renderHabits();
+saveTodayHistory();
+</script>
+</body>
+</html>

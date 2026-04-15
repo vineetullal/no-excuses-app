@@ -74,6 +74,7 @@
     .day-name{font-size:9px;color:#ffffff60;margin-bottom:4px}
     .day-score{font-size:13px;font-weight:800}
     .week-reset-note{font-size:11px;color:#ffffff40;text-align:center;margin-top:8px}
+    .btn-reset-week{width:100%;padding:14px;background:linear-gradient(135deg,#ff4757,#c44569);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px #ff475740;margin-top:16px}
   </style>
 </head>
 <body>
@@ -146,6 +147,7 @@
       <div style="font-size:12px;color:#ffffff60;margin-bottom:12px">Habit completion by day</div>
       <div id="habit-bars"></div>
       <div class="week-reset-note">🔄 Habits reset every Sunday</div>
+      <button class="btn-reset-week" onclick="resetWeek()">🗑️ RESET THIS WEEK</button>
     </div>
   </div>
 
@@ -403,6 +405,23 @@ function renderHabits(){
     </div>`;
   });
   list.innerHTML=html;
+}
+
+function resetWeek(){
+  if(!confirm('Reset all habit history for this week? This cannot be undone.'))return;
+  // Remove each day of this week from history
+  const weekStart=new Date(weekStartKey);
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart);
+    d.setDate(weekStart.getDate()+i);
+    const dk=d.toISOString().split('T')[0];
+    delete weekHistory[dk];
+  }
+  // Reset today's habits
+  HABIT_NAMES.forEach(h=>{habits[h]=false;});
+  save('alc_week_history',weekHistory);
+  save('alc_habits',habits);
+  renderWeekly();
 }
 
 // Init
